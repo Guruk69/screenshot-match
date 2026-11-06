@@ -84,6 +84,15 @@ export interface DispatchRecord {
   status: "Ready for Dispatch" | "Packed" | "Dispatched" | "Delivered" | "Failed";
 }
 
+export interface PutawayTask {
+  id: string;
+  sku: string;
+  quantity: number;
+  suggestedLocationId: string;
+  assignedLocationId?: string;
+  status: "Pending" | "Location Assigned" | "In Progress" | "Completed";
+}
+
 export interface ActivityRecord {
   id: string;
   type: string;
@@ -102,6 +111,7 @@ export interface WmsState {
   orders: CustomerOrder[];
   picks: PickTask[];
   dispatches: DispatchRecord[];
+  putaways: PutawayTask[];
   activity: ActivityRecord[];
 }
 
@@ -233,5 +243,14 @@ export function createSeedState(): WmsState {
     status: "Completed",
   }));
 
-  return { products, locations, inbounds, orders, picks, dispatches, activity };
+  const putaways: PutawayTask[] = Array.from({ length: 8 }, (_, index) => ({
+    id: `PUT-${String(4101 + index).padStart(5, "0")}`,
+    sku: products[index].sku,
+    quantity: 12 + index * 3,
+    suggestedLocationId: locations[(index + 2) % locations.length].id,
+    status: index < 5 ? "Pending" : "Completed",
+    ...(index >= 5 ? { assignedLocationId: locations[index % locations.length].id } : {}),
+  }));
+
+  return { products, locations, inbounds, orders, picks, dispatches, putaways, activity };
 }
